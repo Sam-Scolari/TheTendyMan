@@ -2,7 +2,7 @@ import discord
 from discord.ext.commands import Bot
 from Crawlers import reddit, yahoo
 import json
-from decimal import Decimal
+import credentials
 
 bot = Bot(command_prefix="$")
 
@@ -35,4 +35,4 @@ async def on_ready():
     print('Bot Ready!')
 
 
-bot.run('ODA3Mzc2MTEyNDkzNjU4MTUy.YB3FmQ.RaZK0QlxorkK5tB6Tmu69BTjxwo')
+bot.run(credentials.bot_token)
