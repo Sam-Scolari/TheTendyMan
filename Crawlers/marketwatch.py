@@ -21,25 +21,29 @@ def get_quote(ticker):
     response = requests.get(f'https://www.marketwatch.com/investing/stock/{ticker}', headers=headers)
     source = html.fromstring(response.content)
 
-    link = yahoo.get_website_url(ticker)
+    try:
+        link = yahoo.get_website_url(ticker)
 
-    data = {
-        'ticker': ticker,
-        'business-name': source.cssselect('body > div.container.container--body > div.region.region--intraday > div:nth-child(2) > div > div:nth-child(2) > h1')[0].text,
-        'website': link,
-        'image':  f'https://logo.clearbit.com/{link}',
-        'exchange': (source.cssselect('body > div.container.container--body > div.region.region--intraday > div:nth-child(2) > div > div:nth-child(1) > div.company__symbol > span.company__market')[0].text).split(': ')[1],
-        'price': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > h3 > bg-quote')[0].text,
-        'price-change': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > bg-quote > span.change--point--q > bg-quote')[0].text,
-        'percent-change': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > bg-quote > span.change--percent--q > bg-quote')[0].text,
-        'last-close': (source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__close > table > tbody > tr > td')[0].text).replace('$', ''),
-        'open': (source.cssselect('body > div.container.container--body > div.region.region--primary > div:nth-child(2) > div.group.group--elements.left > div > ul > li:nth-child(1) > span.primary')[0].text).replace('$', ''),
-        'volume': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--full.supportive-data > mw-rangebar.element.element--range.range--volume > div.range__header > span.primary')[0].text,
-        'avg-volume': source.cssselect('body > div.container.container--body > div.region.region--primary > div:nth-child(2) > div.group.group--elements.left > div > ul > li:nth-child(16) > span.primary')[0].text,
-        'market-cap': source.cssselect('body > div.container.container--body > div.region.region--primary > div:nth-child(2) > div.group.group--elements.left > div > ul > li:nth-child(4) > span.primary')[0].text,
-    }
+        data = {
+            'ticker': ticker,
+            'business-name': source.cssselect('body > div.container.container--body > div.region.region--intraday > div:nth-child(2) > div > div:nth-child(2) > h1')[0].text,
+            'website': link,
+            'image':  f'https://logo.clearbit.com/{link}',
+            'exchange': (source.cssselect('body > div.container.container--body > div.region.region--intraday > div:nth-child(2) > div > div:nth-child(1) > div.company__symbol > span.company__market')[0].text).split(': ')[1],
+            'price': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > h3 > bg-quote')[0].text,
+            'price-change': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > bg-quote > span.change--point--q > bg-quote')[0].text,
+            'percent-change': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > bg-quote > span.change--percent--q > bg-quote')[0].text,
+            'last-close': (source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > div.intraday__close > table > tbody > tr > td')[0].text).replace('$', ''),
+            'open': (source.cssselect('body > div.container.container--body > div.region.region--primary > div:nth-child(2) > div.group.group--elements.left > div > ul > li:nth-child(1) > span.primary')[0].text).replace('$', ''),
+            'volume': source.cssselect('body > div.container.container--body > div.region.region--intraday > div.column.column--full.supportive-data > mw-rangebar.element.element--range.range--volume > div.range__header > span.primary')[0].text,
+            'avg-volume': source.cssselect('body > div.container.container--body > div.region.region--primary > div:nth-child(2) > div.group.group--elements.left > div > ul > li:nth-child(16) > span.primary')[0].text,
+            'market-cap': source.cssselect('body > div.container.container--body > div.region.region--primary > div:nth-child(2) > div.group.group--elements.left > div > ul > li:nth-child(4) > span.primary')[0].text,
+        }
 
-    return json.dumps(data)
+        return json.dumps(data)
+        
+    except Exception:
+        return -1
 
 def get_tick_data(ticker):
     response = requests.get(f'https://www.marketwatch.com/investing/stock/{ticker}/download-data?mod=mw_quote_tab', headers=headers)

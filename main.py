@@ -1,6 +1,7 @@
 import os
 import server
 import asyncio
+from Crawlers import reddit
 
 def start_server():
     os.system('start ngrok http 5000')
