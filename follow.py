@@ -1,15 +1,3 @@
-'''
-Necessary additions:
-1) Make sure the bot stops updating messages at market close,
-unless updates throughout after-hours are wanted.
-
-
-
-
-
-'''
-
-
 import discord
 from discord.ext import tasks, commands
 
@@ -40,7 +28,7 @@ class Follow(commands.Cog):
 
 
 
-    def remove_from_followed(self, stock: str):
+    def remove_from_followed(self, stock: str) -> bool:
         '''
         Removes unfollowed stocks from the
         followed-stocks text file.
@@ -67,7 +55,7 @@ class Follow(commands.Cog):
 
 
 
-    def get_followed_stocks(self):
+    def get_followed_stocks(self) -> list:
         '''
         Returns a list of all of the
         currently followed stocks.
@@ -102,7 +90,7 @@ class Follow(commands.Cog):
 
 
 
-    def get_date_info(self):
+    def get_date_info(self) -> tuple:
         '''
         Returns tuple of weekday in 0-6
         format and CST time in 24hr format.
@@ -117,7 +105,7 @@ class Follow(commands.Cog):
 
 
 
-    def construct_embed(self):
+    def construct_embed(self) -> discord.Embed:
         '''
         Constructs embed to be used to
         display data of all followed
