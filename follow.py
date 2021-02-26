@@ -46,7 +46,7 @@ class Follow(commands.Cog):
 
         with open('followed-stocks.txt', 'w') as f:
             for line in lines:
-                if line.strip('\n') != 'stock':
+                if line.strip('\n') != stock:
                     f.write(line)
 
                 else:
