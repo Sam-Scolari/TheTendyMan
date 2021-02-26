@@ -6,6 +6,13 @@ import credentials
 
 bot = Bot(command_prefix="$")
 
+extensions = ['follow']
+
+if __name__ == '__main__':
+    for extension in extensions:
+        bot.load_extension(extension)
+
+
 @bot.event
 async def on_message(msg):
     if (len(msg.content) > 1 and msg.author.id != bot.user.id):
