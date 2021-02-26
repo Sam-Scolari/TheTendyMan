@@ -6,7 +6,7 @@ import credentials
 
 bot = Bot(command_prefix="$")
 
-extensions = ['follow']
+extensions = ['follow', 'admincommands']
 
 if __name__ == '__main__':
     for extension in extensions:
@@ -50,6 +50,7 @@ async def on_message(msg):
                     embed.set_thumbnail(url=f'{image}')
                 
                     await msg.channel.send(embed=embed)
+    await bot.process_commands(msg)
 
 
 

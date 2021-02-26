@@ -13,6 +13,7 @@ unless updates throughout after-hours are wanted.
 import discord
 from discord.ext import tasks, commands
 
+import asyncio
 from datetime import datetime, timezone
 from Crawlers import marketwatch
 import json
@@ -36,7 +37,7 @@ class Follow(commands.Cog):
         '''
         
         with open('followed-stocks.txt', 'a') as f:
-            f.append(f'{stock}\n')
+            f.write(f'{stock}\n')
 
 
 
@@ -67,6 +68,23 @@ class Follow(commands.Cog):
 
 
 
+    async def get_last_msg_list(self):
+        '''
+        Returns a list of 0 if
+        there is no last message
+        in the #followed-stocks
+        channel, or 1 Context
+        object if there is one.
+        '''
+
+        lst = []
+        async for i in self.followed_stocks_channel.history(limit=1):
+            lst.append(i)
+
+        return lst
+
+
+
     def get_followed_stocks(self):
         '''
         Returns a list of all of the
@@ -94,6 +112,8 @@ class Follow(commands.Cog):
         for ticker in self.get_followed_stocks():
             data = json.loads(marketwatch.get_quote(ticker))
 
+
+            data_dict[ticker] = {}
             data_dict[ticker]['current_price'] = data['price']
             data_dict[ticker]['price_change'] = data['price-change']
             data_dict[ticker]['percent_change'] = percent_change = data['percent-change']
@@ -136,18 +156,23 @@ class Follow(commands.Cog):
         ticker_list = '\n'.join(self.get_followed_stocks())
         price_change_list = '\n'.join(price_change_list)
         percent_change_list = '\n'.join(percent_change_list)
+        
+        
+        if len(stock_data.keys()) > 0:
+            embed = discord.Embed(title='Followed Stocks', colour=0x00ff04)
+            embed.add_field(name='Tickers', value=ticker_list, inline=True)
+            embed.add_field(name='Price Change', value=price_change_list, inline=True)
+            embed.add_field(name='Percent Change', value=percent_change_list, inline=True)
+        
+        else:
+            embed = discord.Embed(title='Followed Stocks', description='There are no stocks being followed currently.', colour=0x00ff04)
 
-
-        embed = discord.Embed(title='Followed Stocks', colour=0x00ff04)
-        embed.add_field(name='Tickers', value=ticker_list, inline=True)
-        embed.add_field(name='Price Change', value=price_change_list, inline=True)
-        embed.add_field(name='Percent Change', value=percent_change_list, inline=True)
 
         return embed
 
 
 
-    def send_initial_msg(self):
+    async def send_initial_msg(self):
         '''
         Called when either there are no
         messages in the #followed-stocks
@@ -158,11 +183,11 @@ class Follow(commands.Cog):
 
         embed = self.construct_embed()
         
-        self.followed_stocks_channel.send(embed=embed)
+        await self.followed_stocks_channel.send(embed=embed)
 
 
 
-    def update_last_message(self, message):
+    async def update_last_message(self, message):
         '''
         Updates the previous message sent
         in #followed-stocks with the most
@@ -175,8 +200,8 @@ class Follow(commands.Cog):
         
         embed = self.construct_embed()
 
-        previous_message = self.followed_stocks_channel.history(limit=1)
-        previous_message[0].edit(embed=embed)
+        previous_message =  await self.get_last_msg_list()
+        await previous_message[0].edit(embed=embed)
 
 
 
@@ -195,7 +220,7 @@ class Follow(commands.Cog):
 
 
 
-    @tasks.loop(minutes=self.refresh_rate)
+    @tasks.loop(minutes=15)
     async def update_stocks(self):
         '''
         Updates the message with the most
@@ -207,27 +232,30 @@ class Follow(commands.Cog):
             return
 
         #only need last message
-        previous_message = self.followed_stocks_channel.history(limit=1)
+        
+        previous_message = await self.get_last_msg_list()
         day, current_hour = self.get_date_info()
 
 
         #if not currently in trading hours
-        if day in [5, 6] or current_hour not in range(8, 17): 
-            return
+        # if day in [5, 6] or current_hour not in range(8, 17): 
+            # return
+        if False:
+            pass
 
         #currently in trading hours
         else:
             #no messages in #followed-stocks yet
             if len(previous_message) == 0:
-                self.send_initial_msg()
+                await self.send_initial_msg()
             
             #check if last message sent was from yesterday to know if new one needs to be sent
             elif previous_message[0].created_at.weekday() != day:
-                self.send_initial_msg()
+                await self.send_initial_msg()
 
             #last message in #followed-stocks is from today and needs to be edited
             else:
-                self.update_last_message(previous_message[0])
+                await self.update_last_message(previous_message[0])
 
 
 
@@ -243,6 +271,7 @@ class Follow(commands.Cog):
         await ctx.send(f'Successfully set the refresh time to {time} minutes.')
 
 
+
     @commands.command()
     async def follow(self, ctx, stock: str):
         '''
@@ -251,10 +280,13 @@ class Follow(commands.Cog):
         throughout each trading day via a message
         in the #followed-stocks channel.
         '''
-        
+
+        stock = stock.upper()
         self.add_to_followed(stock)
 
         await ctx.send(f'{stock} was successfully added to followed stocks.')
+
+
 
     @commands.command()
     async def unfollow(self, ctx, stock: str):
@@ -263,7 +295,8 @@ class Follow(commands.Cog):
         from their place in the #followed-stocks
         channel, and will no longer be followed.
         '''
-        
+
+        stock = stock.upper()
         success = self.remove_from_followed(stock)
 
         if success:
@@ -271,6 +304,7 @@ class Follow(commands.Cog):
 
         else:
             await ctx.send(f'{stock} was not among the currently followed stocks.')
+
 
 
 
