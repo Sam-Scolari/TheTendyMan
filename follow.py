@@ -18,6 +18,26 @@ class Follow(commands.Cog):
 
 
 
+    def check_repeat(self, stock: str):
+        '''
+        Checks if a stock is already in
+        the followed-stocks text file.
+
+        Returns True if a match is found
+        and False otherwise.
+        '''
+        
+        with open('followed-stocks.txt', 'r') as f:
+            lines = f.readlines()
+            
+            for line in lines:
+                if line.strip() == stock:
+                    return True
+
+            return False
+
+
+
     def add_to_followed(self, stock: str):
         '''
         Adds newly-followed stocks to the
@@ -270,12 +290,16 @@ class Follow(commands.Cog):
         '''
 
         #if subcommands aren't used
-        print(ctx.invoked_subcommand)
         if ctx.invoked_subcommand is None:
             stock = stock.upper()
-            self.add_to_followed(stock)
 
-            await ctx.send(f'{stock} was successfully added to followed stocks.')
+            if self.check_repeat:
+                await ctx.send('This stock is already followed.')
+                return
+            
+            else:
+                self.add_to_followed(stock)
+                await ctx.send(f'{stock} was successfully added to followed stocks.')
 
 
     #subcommand of follow
