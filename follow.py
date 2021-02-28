@@ -20,7 +20,7 @@ class Follow(commands.Cog):
 
     def check_repeat(self, stock: str):
         '''
-        Checks if a stock is already in
+        Checks if a stock is currently in
         the followed-stocks text file.
 
         Returns True if a match is found
@@ -293,9 +293,8 @@ class Follow(commands.Cog):
         if ctx.invoked_subcommand is None:
             stock = stock.upper()
 
-            if self.check_repeat:
+            if self.check_repeat(stock):
                 await ctx.send('This stock is already followed.')
-                return
             
             else:
                 self.add_to_followed(stock)
@@ -340,13 +339,13 @@ class Follow(commands.Cog):
         '''
 
         stock = stock.upper()
-        success = self.remove_from_followed(stock)
 
-        if success:
-            await ctx.send(f'{stock} will no longer be followed.')
+        if not self.check_repeat(stock):
+                await ctx.send('This stock was not among the currently followed stocks.')
 
         else:
-            await ctx.send(f'{stock} was not among the currently followed stocks.')
+            self.remove_from_followed(stock)
+            await ctx.send(f'{stock} will no longer be followed.')
 
 
 
