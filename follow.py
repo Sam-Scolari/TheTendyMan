@@ -204,7 +204,7 @@ class Follow(commands.Cog):
 
         self.followed_stocks_channel = self.bot.get_channel(814686739952041994)
 
-        self.update_stocks.start() #begin update_stocks task loop
+        #self.update_stocks.start() #begin update_stocks task loop
 
 
 
@@ -260,7 +260,7 @@ class Follow(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def follow(self, ctx, stock: str):
         '''
         Stocks that are followed will have their
@@ -269,10 +269,41 @@ class Follow(commands.Cog):
         in the #followed-stocks channel.
         '''
 
-        stock = stock.upper()
-        self.add_to_followed(stock)
+        #if subcommands aren't used
+        print(ctx.invoked_subcommand)
+        if ctx.invoked_subcommand is None:
+            stock = stock.upper()
+            self.add_to_followed(stock)
 
-        await ctx.send(f'{stock} was successfully added to followed stocks.')
+            await ctx.send(f'{stock} was successfully added to followed stocks.')
+
+
+    #subcommand of follow
+    @follow.command()
+    async def enable(self, ctx):
+        '''
+        Enables the follow function,
+        beginning the update_stocks
+        task loop.
+        '''
+        
+        self.update_stocks.start()
+
+        await ctx.send('Successfully enabled the follow function.')
+
+
+
+    @follow.command()
+    async def disable(self, ctx):
+        '''
+        Disables the follow function,
+        ending the update_stocks
+        task loop.
+        '''
+        
+        self.update_stocks.cancel()
+
+        await ctx.send('Successfully disabled the follow function.')
 
 
 
